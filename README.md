@@ -83,3 +83,30 @@ El proyecto incluye una suite de pruebas unitarias para la lógica de negocio. P
 
 ```bash
 ./mvnw test
+
+---
+
+## Futuras Mejoras y Siguientes Pasos
+
+Aunque el proyecto cumple con todos los requisitos funcionales, se proponen los siguientes pasos para llevarlo a un siguiente nivel de madurez:
+
+* **CI/CD (Integración y Despliegue Continuo):**
+    * Crear un pipeline en **Azure DevOps** o **GitHub Actions** que se dispare con cada `push` a la rama `feat`.
+    * El pipeline ejecutaría los siguientes pasos:
+        1.  **Build:** Compilar el proyecto Java.
+        2.  **Test:** Ejecutar las pruebas.
+        3.  **Package:** Construir la imagen Docker de la aplicación.
+        4.  **Push:** Publicar la imagen en un registro de contenedores privado como **Azure Container Registry (ACR)**.
+        5.  **Deploy:** Desplegar la nueva versión de la imagen en **Azure Kubernetes Service (AKS)**, actualizando los pods de forma controlada (ej. Rolling Update).
+
+* **Documentación de API con OpenAPI (Swagger):**
+    * Integrar la dependencia `springdoc-openapi` para generar automáticamente una especificación OpenAPI 3.
+    * Esto proporcionaría una UI de Swagger (`/swagger-ui.html`) para que los consumidores de la API puedan explorar y probar los endpoints de forma interactiva.
+
+* **Gestión de Secretos:**
+    * Externalizar los datos sensibles (como las credenciales de la base de datos y de la API) del archivo `application.properties`.
+    * Integrar la aplicación con **Azure Key Vault** para gestionar estos secretos de forma segura, en lugar de tenerlos en el código fuente o en variables de entorno simples.
+
+* **Monitorización y Métricas:**
+    * Habilitar los endpoints de **Spring Boot Actuator** para exponer métricas de salud y rendimiento de la aplicación.
+    * Configurar un stack de monitorización con **Prometheus** para recolectar las métricas y **Grafana** para visualizarlas en dashboards, permitiendo una observabilidad completa del estado de la aplicación en producción.
