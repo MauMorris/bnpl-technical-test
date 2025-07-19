@@ -2,6 +2,7 @@ package com.bnpl.creditsystem.controller;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -9,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -45,14 +47,16 @@ class ClientControllerIT {
         // Arrange
         String requestBody = """
             {
-                "name": "Cliente de Integracion",
-                "birthDate": "1990-01-01"
+                "name": "Cliente",
+                "fatherLastname": "De",
+                "motherLastname": "Integracion",
+                "birthDate": "1990-01-01" 
             }
             """;
 
         // Act & Assert
         // Simulamos una petición POST a nuestro endpoint con el cuerpo JSON
-        mockMvc.perform(post("/api/v1/clients")
+        mockMvc.perform(post("/v1/clients")
                 .with(httpBasic("testuser", "testpass"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
@@ -61,5 +65,50 @@ class ClientControllerIT {
                 // Verificamos que la respuesta JSON contenga los campos correctos
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.assignedCreditLine").value(8000));
+    }
+
+    @Test
+    @DisplayName("Prueba de Integración: Debe devolver 400 Bad Request si el cliente es menor de edad")
+    void shouldReturnBadRequest_whenClientIsUnderage() throws Exception {
+        // Arrange
+        String requestBody = """
+            {
+                "name": "Menor",
+                "fatherLastname": "De",
+                "motherLastname": "Edad",
+                "birthDate": "2010-01-01"
+            }
+            """;
+
+        // Act & Assert
+        mockMvc.perform(post("/v1/clients")
+                .with(httpBasic("testuser", "testpass"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Client must be between 18 and 65 years old."));
+    }
+
+    @Test
+    @DisplayName("Prueba de Integración: Debe devolver 400 Bad Request si el nombre está en blanco")
+    void shouldReturnBadRequest_whenNameIsBlank() throws Exception {
+        // Arrange
+        String requestBody = """
+            {
+                "name": "",
+                "fatherLastname": "Sin",
+                "motherLastname": "Nombre",
+                "birthDate": "1990-01-01"
+            }
+            """;
+
+        // Act & Assert
+        mockMvc.perform(post("/v1/clients")
+                .with(httpBasic("testuser", "testpass"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("'name': Name cannot be blank"));
     }
 }

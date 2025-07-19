@@ -1,19 +1,46 @@
 package com.bnpl.creditsystem.exception;
 
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.bnpl.creditsystem.dto.ErrorResponseDto;
 
-@ControllerAdvice // Esta anotación le dice a Spring que esta clase vigilará todos los controladores.
+@ControllerAdvice // Esta anotación permite a la clase interceptar excepciones de toda la aplicación.
 public class GlobalExceptionHandler {
 
-    // Este método se ejecutará CADA VEZ que un controlador lance una IllegalStateException o IllegalArgumentException.
-    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
-    public ResponseEntity<ErrorResponseDto> handleBusinessException(RuntimeException ex) {
-        ErrorResponseDto errorResponse = new ErrorResponseDto(ex.getMessage(), HttpStatus.BAD_REQUEST.value());
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    /**
+     * Maneja las excepciones de validación de DTOs (cuando @Valid falla).
+     * Devuelve un error 400 Bad Request con un mensaje claro de los campos que fallaron.
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponseDto> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        String errorMessage = ex.getBindingResult().getFieldErrors().stream()
+                .map(error -> "'" + error.getField() + "': " + error.getDefaultMessage())
+                .collect(Collectors.joining(", "));
+        log.warn("Validation error: {}", errorMessage);
+        ErrorResponseDto errorResponse = new ErrorResponseDto(errorMessage, HttpStatus.BAD_REQUEST.value());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Maneja excepciones por argumentos inválidos (ej. edad fuera de rango) o estado inválido (ej. crédito insuficiente).
+     * Devuelve un error 400 Bad Request o 409 Conflict según corresponda.
+     */
+    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
+    public ResponseEntity<ErrorResponseDto> handleBusinessExceptions(RuntimeException ex) {
+        // Usamos 409 Conflict para estados inválidos (crédito insuficiente) y 400 para el resto.
+        HttpStatus status = (ex instanceof IllegalStateException) ? HttpStatus.CONFLICT : HttpStatus.BAD_REQUEST;
+        log.warn("Business logic error [{}]: {}", status, ex.getMessage());
+        ErrorResponseDto errorResponse = new ErrorResponseDto(ex.getMessage(), status.value());
+        return new ResponseEntity<>(errorResponse, status);
     }
 }
