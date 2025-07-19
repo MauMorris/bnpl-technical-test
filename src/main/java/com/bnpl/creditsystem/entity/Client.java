@@ -27,6 +27,12 @@ public class Client {
     private String name;
 
     @Column(nullable = false)
+    private String fatherLastname;
+
+    @Column(nullable = false)
+    private String motherLastname;
+
+    @Column(nullable = false)
     private LocalDate birthDate;
 
     @Column(nullable = false)

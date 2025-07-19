@@ -40,7 +40,15 @@ class ClientServiceImplTest {
         request.setBirthDate(LocalDate.now().minusYears(20)); // Un cliente de 20 años
 
         // Creamos una simulación de lo que el repositorio devolverá cuando se guarde el cliente
-        Client savedClient = new Client(1L, "Juan Perez", request.getBirthDate(), new BigDecimal("3000"), new BigDecimal("3000"));
+        Client savedClient = new Client(
+            1L,
+            "Juan",
+            "Perez",
+            "Perez",
+            request.getBirthDate(),
+            new BigDecimal("3000"),
+            new BigDecimal("3000"));
+
         when(clientRepository.save(any(Client.class))).thenReturn(savedClient);
 
         // Act (Actuar): Ejecutamos el método que queremos probar.
@@ -60,7 +68,15 @@ class ClientServiceImplTest {
         request.setName("Maria Lopez");
         request.setBirthDate(LocalDate.now().minusYears(28)); // Una cliente de 28 años
 
-        Client savedClient = new Client(2L, "Maria Lopez", request.getBirthDate(), new BigDecimal("5000"), new BigDecimal("5000"));
+        Client savedClient = new Client(
+            2L, 
+            "Maria", 
+            "Lopez", 
+            "Lopez", 
+            request.getBirthDate(), 
+            new BigDecimal("5000"), 
+            new BigDecimal("5000"));
+            
         when(clientRepository.save(any(Client.class))).thenReturn(savedClient);
 
         // Act
