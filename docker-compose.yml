@@ -1,0 +1,29 @@
+services:
+  # Servicio de la Base de Datos
+  db:
+    image: postgres:15 # Usamos una imagen oficial de PostgreSQL
+    container_name: bnpl_db
+    environment:
+      POSTGRES_DB: creditsystem
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432" # Mapeamos el puerto de la DB al de nuestra máquina
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  # Servicio de nuestra Aplicación Java
+  app:
+    container_name: bnpl_app
+    # Le decimos que construya la imagen a partir de un Dockerfile en el directorio actual.
+    # Crearemos este Dockerfile en el siguiente paso.
+    build: .
+    ports:
+      - "8080:8080" # Mapeamos el puerto de la app al de nuestra máquina
+    # ¡MUY IMPORTANTE! Le decimos a Docker que espere a que la base de datos (db)
+    # esté lista antes de intentar iniciar nuestra aplicación.
+    depends_on:
+      - db
+
+volumes:
+  db-data: # Este volumen asegura que los datos de la DB no se borren si apagamos los contenedores.
