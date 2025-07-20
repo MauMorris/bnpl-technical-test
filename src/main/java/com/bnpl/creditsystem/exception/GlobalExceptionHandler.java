@@ -1,5 +1,6 @@
 package com.bnpl.creditsystem.exception;
 
+import java.time.Instant;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -25,26 +26,50 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponseDto> handleValidationExceptions(MethodArgumentNotValidException ex, HttpServletRequest request) {
-        String errorMessage = ex.getBindingResult().getFieldErrors().stream()
+        final String errorMessage = ex.getBindingResult().getFieldErrors().stream()
                 .map(error -> "'" + error.getField() + "': " + error.getDefaultMessage())
                 .collect(Collectors.joining(", "));
         log.warn("Validation error: {}", errorMessage);
 
-        ErrorResponseDto errorResponse = new ErrorResponseDto(HttpStatus.BAD_REQUEST.value(), errorMessage, request.getRequestURI());
+        final String code;
+        final String error;
+
+        final String path = request.getRequestURI();
+        // Asignamos códigos de error según la especificación OpenAPI
+        if (path.startsWith("/v1/customers")) {
+            code = "APZ000002";
+            error = "INVALID_CUSTOMER_REQUEST";
+        } else if (path.startsWith("/v1/loans")) {
+            code = "APZ000006";
+            error = "INVALID_LOAN_REQUEST";
+        } else {
+            code = "APZ000004"; // Fallback
+            error = "INVALID_REQUEST";
+        }
+        ErrorResponseDto errorResponse = new ErrorResponseDto(code, error, Instant.now().getEpochSecond(), errorMessage, path);
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     /**
-     * Maneja excepciones por argumentos inválidos (ej. edad fuera de rango) o estado inválido (ej. crédito insuficiente).
-     * Devuelve un error 400 Bad Request o 409 Conflict según corresponda.
+     * Maneja excepciones de lógica de negocio personalizadas que extienden de BusinessLogicException.
+     * Esto centraliza el manejo de errores de negocio predecibles (edad inválida, crédito insuficiente, etc.).
      */
-    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
-    public ResponseEntity<ErrorResponseDto> handleBusinessExceptions(RuntimeException ex, HttpServletRequest request) {
-        // Usamos 409 Conflict para estados inválidos (crédito insuficiente) y 400 para el resto.
-        HttpStatus status = (ex instanceof IllegalStateException) ? HttpStatus.CONFLICT : HttpStatus.BAD_REQUEST;
-        log.warn("Business logic error [{}]: {}", status, ex.getMessage());
+    @ExceptionHandler(BusinessLogicException.class)
+    public ResponseEntity<ErrorResponseDto> handleBusinessLogicException(BusinessLogicException ex, HttpServletRequest request) {
+        log.warn("Business logic error [{} - {}]: {}", ex.getStatus(), ex.getError(), ex.getMessage());
+        ErrorResponseDto errorResponse = new ErrorResponseDto(
+            ex.getCode(), 
+            ex.getError(), 
+            Instant.now().getEpochSecond(), 
+            ex.getMessage(), 
+            request.getRequestURI());
+        return new ResponseEntity<>(errorResponse, ex.getStatus());
+    }
 
-        ErrorResponseDto errorResponse = new ErrorResponseDto(status.value(), ex.getMessage(), request.getRequestURI());
-        return new ResponseEntity<>(errorResponse, status);
+     @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ErrorResponseDto> handleResourceNotFound(ResourceNotFoundException ex, HttpServletRequest request) {
+        log.warn("Resource not found: {}", ex.getMessage());
+        ErrorResponseDto errorResponse = new ErrorResponseDto(ex.getCode(), ex.getError(), Instant.now().getEpochSecond(), ex.getMessage(), request.getRequestURI());
+        return new ResponseEntity<>(errorResponse, ex.getStatus());
     }
 }

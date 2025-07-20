@@ -2,6 +2,8 @@ package com.bnpl.creditsystem.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -17,27 +19,30 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "clients")
-public class Client {
+@Table(name = "customers")
+public class Customer {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(nullable = false)
-    private String name;
+    private String firstName;
 
     @Column(nullable = false)
-    private String fatherLastname;
+    private String lastName;
 
     @Column(nullable = false)
-    private String motherLastname;
+    private String secondLastName;
 
     @Column(nullable = false)
-    private LocalDate birthDate;
+    private LocalDate dateOfBirth;
 
     @Column(nullable = false)
     private BigDecimal assignedCreditLine;
     
     @Column(nullable = false)
     private BigDecimal availableCredit;
+
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
 }

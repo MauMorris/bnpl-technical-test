@@ -1,9 +1,11 @@
 package com.bnpl.creditsystem.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import com.bnpl.creditsystem.entity.Client;
+import java.util.UUID;
 
-public interface ClientRepository extends JpaRepository<Client, Long> {
+import org.springframework.data.jpa.repository.JpaRepository;
+import com.bnpl.creditsystem.entity.Customer;
+
+public interface CustomerRepository extends JpaRepository<Customer, UUID> {
     // Al extender JpaRepository, ya tenemos métodos como:
     // save(), findById(), findAll(), deleteById(), etc.
 }

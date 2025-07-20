@@ -24,7 +24,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT) // Levanta el contexto completo de Spring
 @AutoConfigureMockMvc // Configura una herramienta para hacer peticiones HTTP falsas
 @Testcontainers // Activa la magia de Testcontainers
-class ClientControllerIT {
+class CustomerControllerIT {
 
     @Autowired
     private MockMvc mockMvc; // Herramienta para simular peticiones HTTP a nuestros controladores
@@ -47,16 +47,16 @@ class ClientControllerIT {
         // Arrange
         String requestBody = """
             {
-                "name": "Cliente",
-                "fatherLastname": "De",
-                "motherLastname": "Integracion",
-                "birthDate": "1990-01-01" 
+                "firstName": "Cliente",
+                "lastName": "De",
+                "secondLastName": "Integracion",
+                "dateOfBirth": "1990-01-01" 
             }
             """;
 
         // Act & Assert
         // Simulamos una petición POST a nuestro endpoint con el cuerpo JSON
-        mockMvc.perform(post("/v1/clients")
+        mockMvc.perform(post("/v1/customers")
                 .with(httpBasic("testuser", "testpass"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
@@ -64,7 +64,9 @@ class ClientControllerIT {
                 .andExpect(status().isCreated())
                 // Verificamos que la respuesta JSON contenga los campos correctos
                 .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.assignedCreditLine").value(8000));
+                .andExpect(jsonPath("$.creditLineAmount").value(8000))
+                .andExpect(jsonPath("$.availableCreditLineAmount").value(8000))
+                .andExpect(jsonPath("$.createdAt").exists());
     }
 
     @Test
@@ -73,21 +75,22 @@ class ClientControllerIT {
         // Arrange
         String requestBody = """
             {
-                "name": "Menor",
-                "fatherLastname": "De",
-                "motherLastname": "Edad",
-                "birthDate": "2010-01-01"
+                "firstName": "Menor",
+                "lastName": "De",
+                "secondLastName": "Edad",
+                "dateOfBirth": "2010-01-01"
             }
             """;
 
         // Act & Assert
-        mockMvc.perform(post("/v1/clients")
+        mockMvc.perform(post("/v1/customers")
                 .with(httpBasic("testuser", "testpass"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.message").value("Client must be between 18 and 65 years old."));
+                .andExpect(status().isBadRequest()) // 1. Verifica el código de estado HTTP
+                .andExpect(jsonPath("$.code").value("APZ000002")) // 2. Verifica el código de error de la API en el cuerpo JSON
+                .andExpect(jsonPath("$.error").value("INVALID_CUSTOMER_REQUEST")) // 3. Verifica el nombre del error
+                .andExpect(jsonPath("$.message").value("Customer must be between 18 and 65 years old.")); // 4. Verifica el mensaje específico
     }
 
     @Test
@@ -96,19 +99,20 @@ class ClientControllerIT {
         // Arrange
         String requestBody = """
             {
-                "name": "",
-                "fatherLastname": "Sin",
-                "motherLastname": "Nombre",
-                "birthDate": "1990-01-01"
+                "firstName": "",
+                "lastName": "Sin",
+                "secondLastName": "Nombre",
+                "dateOfBirth": "1990-01-01"
             }
             """;
 
         // Act & Assert
-        mockMvc.perform(post("/v1/clients")
+        mockMvc.perform(post("/v1/customers")
                 .with(httpBasic("testuser", "testpass"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("'name': Name cannot be blank"));
+                .andExpect(status().isBadRequest()) // Verifica el código de estado HTTP
+                .andExpect(jsonPath("$.code").value("APZ000002")) // Verifica el código de error de la API
+                .andExpect(jsonPath("$.message").value("'firstName': Name cannot be blank")); // Verifica el mensaje de validación
     }
 }

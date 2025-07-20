@@ -21,25 +21,24 @@ Este proyecto simula los eventos principales de un sistema de creación y gesti�
 
 La API expone dos endpoints principales:
 
-### 1. Registro de Cliente
-- **Endpoint:** `POST /api/v1/clients`
+### 1. Registro de Cliente (Customer)
+- **Endpoint:** `POST /v1/customers`
 - **Descripción:** Registra un nuevo cliente en el sistema. La línea de crédito se asigna automáticamente basándose en la edad del cliente.
 - **Reglas de Negocio:**
-    - **18 a 25 años:** $3,000
-    - **26 a 30 años:** $5,000
-    - **31 a 65 años:** $8,000
+    - **18 a 25 años:** $3,000 MXN
+    - **26 a 30 años:** $5,000 MXN
+    - **31 a 65 años:** $8,000 MXN
     - Clientes fuera de este rango de edad no son aceptados.
 
-### 2. Registro de Compra
-- **Endpoint:** `POST /api/v1/purchases`
-- **Descripción:** Registra una compra para un cliente existente, validando contra su línea de crédito disponible.
+### 2. Registro de Préstamo (Loan)
+- **Endpoint:** `POST /v1/loans`
+- **Descripción:** Registra un loan para un cliente existente, validando contra su línea de crédito disponible.
 - **Reglas de Negocio:**
-    - La compra es rechazada si el monto excede el crédito disponible.
+    - El préstamo (Loan) es rechazado si el monto excede el crédito disponible.
     - Se asigna un esquema de pago y una tasa de interés según las siguientes reglas (en orden de prioridad):
         1.  **Scheme 1 (13% interés):** Si el primer nombre del cliente empieza con 'C', 'L', o 'H'.
-        2.  **Scheme 2 (16% interés):** Si el ID del cliente es mayor a 25.
-        3.  **Scheme 2 (16% interés):** Por defecto, si ninguna de las reglas anteriores aplica.
-    - Todas las compras se dividen en 5 pagos quincenales.
+        2.  **Scheme 2 (16% interés):** Por defecto, si la regla anterior no aplica.
+    - Todos los préstamos se dividen en 5 pagos quincenales.
 
 ---
 
@@ -49,7 +48,7 @@ Para levantar el entorno completo (aplicación + base de datos), solo necesitas 
 
 1.  **Clonar el Repositorio:**
     ```bash
-    git clone [https://github.com/MauMorris/bnpl-technical-test.git](https://github.com/MauMorris/bnpl-technical-test.git)
+    git clone https://github.com/MauMorris/bnpl-technical-test.git
     cd bnpl-technical-test
     ```
 
@@ -66,15 +65,16 @@ Para levantar el entorno completo (aplicación + base de datos), solo necesitas 
         - **Usuario:** `testuser`
         - **Contraseña:** `testpass`
     - **Ejemplo de Petición (Crear Cliente):**
-        - `POST http://localhost:8080/api/v1/clients`
+        - `POST http://localhost:8080/v1/customers`
         - **Body (JSON):**
           ```json
           {
-              "name": "Ana García",
-              "birthDate": "2000-05-15"
-          }
-          ```
-
+            "firstName": "",
+            "lastName": "Sin",
+            "secondLastName": "Nombre",
+            "dateOfBirth": "1990-01-01"
+            }
+        ```
 ---
 
 ## Pruebas
