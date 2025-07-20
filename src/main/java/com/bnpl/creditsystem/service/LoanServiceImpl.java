@@ -78,7 +78,7 @@ public class LoanServiceImpl implements LoanService {
         BigDecimal installmentAmount = totalAmount.divide(new BigDecimal(NUMBER_OF_INSTALLMENTS), 2, RoundingMode.HALF_UP);
 
         // 5. Crear la nueva entidad Loan.
-        Loan newLoan = createLoan(request, interestRate, commission, totalAmount, customer);
+        Loan newLoan = buildLoanEntity(request, interestRate, commission, totalAmount, customer);
 
         // 6. Crear la lista de cuotas (Installments).
         List<Installment> installments = createInstallments(newLoan, installmentAmount);
@@ -125,7 +125,7 @@ public class LoanServiceImpl implements LoanService {
      * @param commission 
      * @param interestRate 
      */
-    private Loan createLoan(LoanRequest request, BigDecimal interestRate, BigDecimal commission, BigDecimal totalAmount, Customer customer) {
+    private Loan buildLoanEntity(LoanRequest request, BigDecimal interestRate, BigDecimal commission, BigDecimal totalAmount, Customer customer) {
         return new Loan(null, request.getAmount(), LocalDateTime.now(), LoanStatus.ACTIVE, interestRate, commission, totalAmount, customer, null);
     }
 
@@ -167,7 +167,7 @@ public class LoanServiceImpl implements LoanService {
             loan.getCustomer().getId(),
             loan.getLoanAmount(),
             loan.getStatus(),
-            loan.getLoanDate(),
+            loan.getCreatedAt(),
             paymentPlan
             );
     }

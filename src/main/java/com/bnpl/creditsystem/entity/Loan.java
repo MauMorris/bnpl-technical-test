@@ -37,7 +37,7 @@ public class Loan {
     private BigDecimal loanAmount;
 
     @Column(nullable = false)
-    private LocalDateTime loanDate;
+    private LocalDateTime createdAt;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
