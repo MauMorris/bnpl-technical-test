@@ -87,15 +87,14 @@ public class CustomerServiceImpl implements CustomerService {
      * @return Una nueva entidad Customer lista para ser guardada.
      */
     private Customer toEntity(CustomerRequest request, BigDecimal creditLine) {
-        return new Customer(null, request.getFirstName(), request.getLastName(), request.getSecondLastName(),
-                request.getDateOfBirth(), creditLine, creditLine, LocalDateTime.now());
+        return new Customer(null, request.getFirstName(), request.getLastName(), request.getSecondLastName(), request.getDateOfBirth(), creditLine, creditLine, LocalDateTime.now());
     }
 
     /**
      * Convierte una entidad customere en un DTO de respuesta.
      */
     private CustomerResponse toCustomerResponse(Customer customer) {
-        return new CustomerResponse(customer.getId(), customer.getAssignedCreditLine(), customer.getAvailableCredit(), customer.getCreatedAt());
+        return new CustomerResponse(customer.getId(), customer.getCreditLineAmount(), customer.getAvailableCreditLineAmount(), customer.getCreatedAt());
     }
 
     @Override

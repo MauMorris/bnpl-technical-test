@@ -1,5 +1,6 @@
 package com.bnpl.creditsystem.controller;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -9,17 +10,19 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import com.bnpl.creditsystem.security.JwtService;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT) // Levanta el contexto completo de Spring
 @AutoConfigureMockMvc // Configura una herramienta para hacer peticiones HTTP falsas
@@ -28,6 +31,11 @@ class CustomerControllerIT {
 
     @Autowired
     private MockMvc mockMvc; // Herramienta para simular peticiones HTTP a nuestros controladores
+
+    @Autowired
+    private JwtService jwtService;
+
+    private String jwtToken;
 
     @Container // Le dice a Testcontainers que gestione este contenedor
     static PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>("postgres:15-alpine");
@@ -39,6 +47,16 @@ class CustomerControllerIT {
         registry.add("spring.datasource.url", postgresContainer::getJdbcUrl);
         registry.add("spring.datasource.username", postgresContainer::getUsername);
         registry.add("spring.datasource.password", postgresContainer::getPassword);
+    }
+
+    @BeforeEach
+    void setUp() {
+        // Creamos un usuario de prueba y generamos un token para él antes de cada test.
+        UserDetails testUser = User.builder()
+                .username("testuser")
+                .password("testpass")
+                .roles("USER").build();
+        jwtToken = jwtService.generateToken(testUser);
     }
 
     @Test
@@ -57,8 +75,8 @@ class CustomerControllerIT {
         // Act & Assert
         // Simulamos una petición POST a nuestro endpoint con el cuerpo JSON
         mockMvc.perform(post("/v1/customers")
-                .with(httpBasic("testuser", "testpass"))
                 .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + jwtToken)
                 .content(requestBody))
                 // Verificamos que el status de la respuesta sea 201 Created
                 .andExpect(status().isCreated())
@@ -84,8 +102,8 @@ class CustomerControllerIT {
 
         // Act & Assert
         mockMvc.perform(post("/v1/customers")
-                .with(httpBasic("testuser", "testpass"))
                 .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + jwtToken)
                 .content(requestBody))
                 .andExpect(status().isBadRequest()) // 1. Verifica el código de estado HTTP
                 .andExpect(jsonPath("$.code").value("APZ000002")) // 2. Verifica el código de error de la API en el cuerpo JSON
@@ -108,8 +126,8 @@ class CustomerControllerIT {
 
         // Act & Assert
         mockMvc.perform(post("/v1/customers")
-                .with(httpBasic("testuser", "testpass"))
                 .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + jwtToken)
                 .content(requestBody))
                 .andExpect(status().isBadRequest()) // Verifica el código de estado HTTP
                 .andExpect(jsonPath("$.code").value("APZ000002")) // Verifica el código de error de la API

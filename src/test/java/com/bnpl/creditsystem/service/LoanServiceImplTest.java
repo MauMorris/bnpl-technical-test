@@ -39,8 +39,8 @@ class LoanServiceImplTest {
     private LoanServiceImpl loanService;
 
     @Test
-    @DisplayName("Debe procesar una compra válida correctamente")
-    void shouldProcessPurchase_WhenRequestIsValid() {
+    @DisplayName("Debe procesar un préstamo válido correctamente")
+    void shouldProcessLoan_WhenRequestIsValid() {
         // Arrange
         // 1. Preparamos los datos de entrada
         UUID customerId = UUID.randomUUID();
@@ -78,7 +78,7 @@ class LoanServiceImplTest {
         assertThat(response).isNotNull();
         assertThat(response.getId()).isNotNull();
         assertThat(response.getCustomerId()).isEqualTo(customerId);
-        assertThat(mockCustomer.getAvailableCredit()).isEqualByComparingTo(new BigDecimal("7000")); // Verificamos que el crédito se descontó
+        assertThat(mockCustomer.getAvailableCreditLineAmount()).isEqualByComparingTo(new BigDecimal("7000")); // Verificamos que el crédito se descontó
     }
 
     @Test

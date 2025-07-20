@@ -38,10 +38,10 @@ public class Customer {
     private LocalDate dateOfBirth;
 
     @Column(nullable = false)
-    private BigDecimal assignedCreditLine;
+    private BigDecimal creditLineAmount;
     
     @Column(nullable = false)
-    private BigDecimal availableCredit;
+    private BigDecimal availableCreditLineAmount;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;

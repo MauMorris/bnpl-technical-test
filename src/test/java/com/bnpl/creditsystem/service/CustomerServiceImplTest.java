@@ -100,7 +100,7 @@ class CustomerServiceImplTest {
 
     @Test
     @DisplayName("Debe lanzar una excepción si el customer es menor de 18 años")
-    void shouldThrowException_WhenClientIsUnderage() {
+    void shouldThrowException_WhenCustomerIsUnderage() {
         // Arrange
         CustomerRequest request = new CustomerRequest();
         request.setFirstName("Niño Prodigio");

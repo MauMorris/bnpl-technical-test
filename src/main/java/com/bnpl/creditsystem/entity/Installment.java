@@ -2,6 +2,7 @@ package com.bnpl.creditsystem.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -28,14 +29,14 @@ import lombok.Builder;
 public class Installment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(nullable = false)
     private BigDecimal amount;
 
     @Column(nullable = false)
-    private LocalDate dueDate;
+    private LocalDate scheduledPaymentDate;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

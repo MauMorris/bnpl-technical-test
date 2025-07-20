@@ -50,8 +50,8 @@ public class CustomerController {
     }
 
     @GetMapping({"/{customerId}"})
-    public ResponseEntity<CustomerResponse> getClientById(@PathVariable("customerId") UUID customerId) {
-        CustomerResponse clientResponse = customerService.findCustomerById(customerId);
-        return ResponseEntity.ok(clientResponse);
+    public ResponseEntity<CustomerResponse> getCustomerById(@PathVariable("customerId") UUID customerId) {
+        CustomerResponse customerResponse = customerService.findCustomerById(customerId);
+        return ResponseEntity.ok(customerResponse);
     }
 }

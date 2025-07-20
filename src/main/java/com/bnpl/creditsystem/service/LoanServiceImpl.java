@@ -58,15 +58,15 @@ public class LoanServiceImpl implements LoanService {
                 .orElseThrow(() -> new CustomerNotFoundException(String.valueOf(request.getCustomerId())));
 
         // 2. Validar que el monto de la compra no exceda el crédito disponible.
-        if (request.getAmount().compareTo(customer.getAvailableCredit()) > 0) {
+        if (request.getAmount().compareTo(customer.getAvailableCreditLineAmount()) > 0) {
             log.warn("Purchase rejected for customer ID {}: Insufficient credit. Requested: {}, Available: {}", 
                 customer.getId(), 
                 request.getAmount(), 
-                customer.getAvailableCredit());
+                customer.getAvailableCreditLineAmount());
                 
             throw new InsufficientCreditException("Insufficient credit line for this loan.");
         }
-        log.info("Found customer: {}. Available credit: {}", customer.getFirstName(), customer.getAvailableCredit());
+        log.info("Found customer: {}. Available credit: {}", customer.getFirstName(), customer.getAvailableCreditLineAmount());
 
         // 3. Asignar esquema de pago y tasa de interés según las reglas de negocio.
         BigDecimal interestRate = determineInterestRate(customer);
@@ -85,8 +85,8 @@ public class LoanServiceImpl implements LoanService {
         newLoan.setInstallments(installments);
 
         // 7. Actualizar el crédito disponible del customer.
-        BigDecimal newAvailableCredit = customer.getAvailableCredit().subtract(loanAmount);
-        customer.setAvailableCredit(newAvailableCredit);
+        BigDecimal newAvailableCredit = customer.getAvailableCreditLineAmount().subtract(loanAmount);
+        customer.setAvailableCreditLineAmount(newAvailableCredit);
         log.info("Updating customer ID {} available credit to: {}", customer.getId(), newAvailableCredit);
 
         // 8. Guardar el nuevo préstamo (y gracias a CascadeType.ALL, sus cuotas también se guardarán).
@@ -138,7 +138,7 @@ public class LoanServiceImpl implements LoanService {
             installments.add(Installment.builder()
                 .amount(installmentAmount)
                 .status(InstallmentStatus.PENDING)
-                .dueDate(LocalDate.now().plusDays(DAYS_BETWEEN_INSTALLMENTS * i))
+                .scheduledPaymentDate(LocalDate.now().plusDays(DAYS_BETWEEN_INSTALLMENTS * i))
                 .loan(loan)
                 .build());
         }
@@ -153,7 +153,7 @@ public class LoanServiceImpl implements LoanService {
             List<InstallmentResponse> installmentResponses = loan.getInstallments().stream()
                     .map(installment -> new InstallmentResponse(
                             installment.getAmount(),
-                            installment.getDueDate(),
+                            installment.getScheduledPaymentDate(),
                             installment.getStatus()
                     ))
                     .toList();

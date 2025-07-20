@@ -8,5 +8,5 @@ import com.bnpl.creditsystem.dto.LoanResponse;
 public interface LoanService {
 
     LoanResponse createLoan(LoanRequest request);
-    LoanResponse findLoanById(UUID purchaseId);
+    LoanResponse findLoanById(UUID loanId);
 }

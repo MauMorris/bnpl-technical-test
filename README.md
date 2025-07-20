@@ -9,8 +9,8 @@ Este proyecto simula los eventos principales de un sistema de creación y gesti�
 - **Lenguaje:** Java 17
 - **Framework:** Spring Boot 3.x
 - **Acceso a Datos:** Spring Data JPA / Hibernate
-- **Base de Datos:** PostgreSQL (orquestada con Docker)
-- **Seguridad:** Spring Security (con autenticación HTTP Basic)
+- **Base de Datos:** PostgreSQL (orquestada con Docker y Testcontainers para pruebas)
+- **Seguridad:** Spring Security (con autenticación JWT Bearer Token)
 - **Gestión de Dependencias:** Maven
 - **Pruebas:** JUnit 5, Mockito
 - **Containerización:** Docker & Docker Compose
@@ -60,21 +60,29 @@ Para levantar el entorno completo (aplicación + base de datos), solo necesitas 
     La aplicación estará disponible en `http://localhost:8080`.
 
 3.  **Probar la API:**
-    Puedes usar cualquier cliente de API como Postman.
-    - **Autenticación:** La API está protegida con HTTP Basic Auth. Usa las siguientes credenciales:
-        - **Usuario:** `testuser`
-        - **Contraseña:** `testpass`
+    Puedes usar cualquier cliente de API como Postman. La API está protegida con JWT.
+    - **Paso 1: Obtener un Token de Autenticación**
+        - `POST http://localhost:8080/v1/auth/login`
+        - **Body (JSON):**
+          ```json
+          {
+            "username": "testuser",
+            "password": "testpass"
+          }
+          ```
+        - La respuesta te dará un token. Cópialo.
     - **Ejemplo de Petición (Crear Cliente):**
         - `POST http://localhost:8080/v1/customers`
         - **Body (JSON):**
           ```json
           {
-            "firstName": "",
-            "lastName": "Sin",
-            "secondLastName": "Nombre",
+            "firstName": "Juan",
+            "lastName": "Perez",
+            "secondLastName": "Garcia",
             "dateOfBirth": "1990-01-01"
             }
-        ```
+          ```
+        - **Headers:** Añade un header `Authorization` con el valor `Bearer <TU_TOKEN_COPIADO_AQUI>`.
 ---
 
 ## Pruebas
