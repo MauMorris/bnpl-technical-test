@@ -2,11 +2,14 @@ package com.bnpl.creditsystem.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bnpl.creditsystem.dto.ClientConsultantResponse;
 import com.bnpl.creditsystem.dto.ClientRegistrationRequest;
 import com.bnpl.creditsystem.dto.ClientRegistrationResponse;
 import com.bnpl.creditsystem.service.ClientService;
@@ -29,5 +32,11 @@ public class ClientController {
         // El controlador no hace lógica, solo delega al servicio.
         // Devuelve el código de estado HTTP 201 Created y en el body el resultado del servicio.
         return ResponseEntity.status(HttpStatus.CREATED).body(clientRegistrationResponse);
+    }
+
+    @GetMapping({"/{clientid}"})
+    public ResponseEntity<ClientConsultantResponse> getClientById(@PathVariable("clientid") Long clientId) {
+        ClientConsultantResponse clientResponse = clientService.findClientById(clientId);
+        return ResponseEntity.ok(clientResponse);
     }
 }

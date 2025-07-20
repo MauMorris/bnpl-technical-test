@@ -6,6 +6,7 @@ import java.time.Period;
 
 import org.springframework.stereotype.Service;
 
+import com.bnpl.creditsystem.dto.ClientConsultantResponse;
 import com.bnpl.creditsystem.dto.ClientRegistrationRequest;
 import com.bnpl.creditsystem.dto.ClientRegistrationResponse;
 import com.bnpl.creditsystem.entity.Client;
@@ -92,5 +93,29 @@ public class ClientServiceImpl implements ClientService {
      */
     private ClientRegistrationResponse toResponseDto(Client client) {
         return new ClientRegistrationResponse(client.getId(), client.getAssignedCreditLine());
+    }
+
+    @Override
+    public ClientConsultantResponse findClientById(Long clientId) {
+        log.info("Attempting to consult a client by the Id: {}", clientId);
+
+        // 1. Busca el cliente por ID y si no lo encuentra, lanza una excepción.
+        Client clientConsulted = clientRepository.findById(clientId)
+                .orElseThrow(() -> new IllegalArgumentException("Client not found with id: " + clientId));
+
+//        final String fullName = String.format("%s %s %s", clientConsulted.getName(), clientConsulted.getFatherLastname(), clientConsulted.getMotherLastname());
+        log.info("Successfully retrieving client: {} {} {}", clientConsulted.getName(), clientConsulted.getFatherLastname(), clientConsulted.getMotherLastname());
+        // 2. Convierte la entidad a DTO y la devuelve.
+        return toConsultantResponseDto(clientConsulted);
+    }
+
+    private ClientConsultantResponse toConsultantResponseDto(Client clientConsulted) {
+        return new ClientConsultantResponse(
+            clientConsulted.getName(), 
+            clientConsulted.getFatherLastname(), 
+            clientConsulted.getMotherLastname(), 
+            clientConsulted.getBirthDate(), 
+            clientConsulted.getAssignedCreditLine(), 
+            clientConsulted.getAvailableCredit());
     }
 }
