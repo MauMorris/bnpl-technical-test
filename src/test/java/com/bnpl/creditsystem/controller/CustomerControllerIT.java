@@ -61,7 +61,7 @@ class CustomerControllerIT {
 
     @Test
     @DisplayName("Prueba de Integración: Debe registrar un cliente y devolver 201 Created")
-    void shouldRegisterClient_whenRequestIsValid() throws Exception {
+    void shouldRegisterCustomer_whenRequestIsValid() throws Exception {
         // Arrange
         String requestBody = """
             {
@@ -89,7 +89,7 @@ class CustomerControllerIT {
 
     @Test
     @DisplayName("Prueba de Integración: Debe devolver 400 Bad Request si el cliente es menor de edad")
-    void shouldReturnBadRequest_whenClientIsUnderage() throws Exception {
+    void shouldReturnBadRequest_whenCustomerIsUnderage() throws Exception {
         // Arrange
         String requestBody = """
             {

@@ -35,7 +35,7 @@ class CustomerServiceImplTest {
     // --- PRUEBAS PARA EL REGISTRO DE CUSTOMERS ---
 
     @Test
-    @DisplayName("Debe asignar 3000 de crédito a customers entre 18 y 25 años")
+    @DisplayName("Debe asignar 3000 de crédito a un customer entre 18 y 25 años")
     void shouldAssign3000CreditLine_WhenAgeIsBetween18And25() {
         // Arrange (Arreglar): Preparamos los datos de entrada y el comportamiento de los mocks.
         CustomerRequest request = new CustomerRequest();
@@ -68,7 +68,7 @@ class CustomerServiceImplTest {
     }
 
     @Test
-    @DisplayName("Debe asignar 5000 de crédito a clientes entre 26 y 30 años")
+    @DisplayName("Debe asignar 5000 de crédito a un customer entre 26 y 30 años")
     void shouldAssign5000CreditLine_WhenAgeIsBetween26And30() {
         // Arrange
         CustomerRequest request = new CustomerRequest();
