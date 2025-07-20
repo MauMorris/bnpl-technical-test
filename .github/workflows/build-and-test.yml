@@ -47,8 +47,15 @@ jobs:
 
     # --- Etapa de Publicación de Imagen Docker (Solo en la rama main) ---
 
-    - name: Log in to GitHub Container Registry
+    - name: Extract Docker metadata
       # Este paso solo se ejecuta si el evento es un 'push' a la rama 'main'
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository }}
+
+    - name: Log in to GitHub Container Registry
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       uses: docker/login-action@v3
       with:
@@ -62,4 +69,5 @@ jobs:
       with:
         context: .
         push: true
-        tags: ghcr.io/${{ github.repository }}:${{ github.sha }}, ghcr.io/${{ github.repository }}:latest
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
