@@ -11,7 +11,6 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.bnpl.creditsystem.dto.InstallmentResponse;
 import com.bnpl.creditsystem.dto.LoanRequest;
 import com.bnpl.creditsystem.dto.LoanResponse;
 
@@ -23,6 +22,7 @@ import com.bnpl.creditsystem.entity.LoanStatus;
 import com.bnpl.creditsystem.exception.CustomerNotFoundException;
 import com.bnpl.creditsystem.exception.InsufficientCreditException;
 import com.bnpl.creditsystem.exception.LoanNotFoundException;
+import com.bnpl.creditsystem.mapper.LoanMapper;
 import com.bnpl.creditsystem.repository.CustomerRepository;
 import com.bnpl.creditsystem.repository.LoanRepository;
 
@@ -47,6 +47,8 @@ public class LoanServiceImpl implements LoanService {
     
     private final CustomerRepository customerRepository;
     private final LoanRepository loanRepository;
+    
+    private final LoanMapper loanMapper;
 
     @Override
     @Transactional // ¡MUY IMPORTANTE! Asegura que todas las operaciones de BD se completen o ninguna lo haga.
@@ -94,7 +96,7 @@ public class LoanServiceImpl implements LoanService {
         Loan savedLoan = loanRepository.save(newLoan);
         log.info("Successfully processed and saved new loan with ID: {}", savedLoan.getId());
         // 9. Devolver la respuesta.
-        return toLoanResponse(savedLoan);
+        return loanMapper.toLoanResponse(savedLoan);
     }
 
     /**
@@ -149,29 +151,6 @@ public class LoanServiceImpl implements LoanService {
         return installments;
     }
 
-        private LoanResponse toLoanResponse(Loan loan) {
-            List<InstallmentResponse> installmentResponses = loan.getInstallments().stream()
-                    .map(installment -> new InstallmentResponse(
-                            installment.getAmount(),
-                            installment.getScheduledPaymentDate(),
-                            installment.getStatus()
-                    ))
-                    .toList();
-            LoanResponse.PaymentPlan paymentPlan = new LoanResponse.PaymentPlan(
-                loan.getCommission(),
-                installmentResponses
-                );
-            
-            return new LoanResponse(
-            loan.getId(),
-            loan.getCustomer().getId(),
-            loan.getLoanAmount(),
-            loan.getStatus(),
-            loan.getCreatedAt(),
-            paymentPlan
-            );
-    }
-
     @Override
     public LoanResponse findLoanById(UUID loanId) {
         log.info("Attempting to consult a loan by the Id: {}", loanId);
@@ -182,6 +161,6 @@ public class LoanServiceImpl implements LoanService {
         log.info("Successfully retrieving loan: {}", loanConsulted.getId());
         
         // 2. Convierte la entidad a DTO y la devuelve.
-        return toLoanResponse(loanConsulted);
+        return loanMapper.toLoanResponse(loanConsulted);
     }
 }

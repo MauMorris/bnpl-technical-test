@@ -14,6 +14,8 @@ import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -24,6 +26,8 @@ import com.bnpl.creditsystem.entity.Customer;
 import com.bnpl.creditsystem.entity.Loan;
 import com.bnpl.creditsystem.exception.InsufficientCreditException;
 import com.bnpl.creditsystem.repository.CustomerRepository;
+import static org.mockito.Mockito.verify;
+import com.bnpl.creditsystem.mapper.LoanMapper;
 import com.bnpl.creditsystem.repository.LoanRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,8 +39,14 @@ class LoanServiceImplTest {
     @Mock
     private LoanRepository loanRepository;
 
+    @Mock
+    private LoanMapper loanMapper;
+
     @InjectMocks
     private LoanServiceImpl loanService;
+
+    @Captor
+    private ArgumentCaptor<Loan> loanArgumentCaptor;
 
     @Test
     @DisplayName("Debe procesar un préstamo válido correctamente")
@@ -69,16 +79,30 @@ class LoanServiceImplTest {
             return loanToSave;
         });
 
+        // 4. Simulamos la respuesta del mapper, que ahora es una dependencia del servicio.
+        when(loanMapper.toLoanResponse(any(Loan.class))).thenAnswer(invocation -> {
+            Loan savedLoan = invocation.getArgument(0);
+            // Para el propósito de este test, solo necesitamos que el mapper devuelva un objeto
+            // con los IDs correctos para que las aserciones pasen.
+            return new LoanResponse(savedLoan.getId(), savedLoan.getCustomer().getId(), null, null, null, null);
+        });
+
         // Act
-        // 4. Ejecutamos el método a probar
+        // 5. Ejecutamos el método a probar
         LoanResponse response = loanService.createLoan(request);
 
         // Assert
-        // 5. Verificamos que la respuesta es la correcta
+        // 6. Verificamos que la respuesta es la correcta
         assertThat(response).isNotNull();
         assertThat(response.getId()).isNotNull();
         assertThat(response.getCustomerId()).isEqualTo(customerId);
-        assertThat(mockCustomer.getAvailableCreditLineAmount()).isEqualByComparingTo(new BigDecimal("7000")); // Verificamos que el crédito se descontó
+
+        // Capturamos el objeto Loan que se pasó al método save()
+        verify(loanRepository).save(loanArgumentCaptor.capture());
+        Loan capturedLoan = loanArgumentCaptor.getValue();
+
+        // Verificamos que el crédito del cliente asociado al préstamo guardado se descontó correctamente
+        assertThat(capturedLoan.getCustomer().getAvailableCreditLineAmount()).isEqualByComparingTo(new BigDecimal("7000"));
     }
 
     @Test
