@@ -14,7 +14,7 @@ Este proyecto simula los eventos principales de un sistema de creación y gesti�
 - **Gestión de Dependencias:** Maven
 - **Pruebas:** JUnit 5, Mockito
 - **Containerización:** Docker & Docker Compose
-
+- **Pipeline CI/CD:** Con Github Actions que se dispare con cada `push` a cualquier rama.
 ---
 
 ## Funcionalidades Implementadas
@@ -94,18 +94,24 @@ El proyecto incluye una suite de pruebas unitarias para la lógica de negocio. P
 
 ---
 
+## Pipelines
+
+CI/CD (Integración y Despliegue Continuo):
+Se tiene un pipeline en **GitHub Actions** que se dispare con cada `push` a cualquier rama.
+    * El pipeline ejecuta los siguientes pasos:
+        1. **Checkout repository:** Clona el código del repositorio.
+        2. **Set up JDK 17:** Configura el entorno de Java 17.
+        3. **Build and test with Maven:** Compila el código y ejecuta la suite completa de pruebas.
+        4. **Upload JaCoCo coverage report:** Guarda el reporte de cobertura de pruebas como un artefacto.
+        5. **Extract Docker metadata:** Genera las etiquetas y metadatos para la imagen Docker (solo en la rama `main`).
+        6. **Log in to GitHub Container Registry:** Inicia sesión en el registro de contenedores (solo en la rama `main`).
+        7. **Build and push Docker image:** Construye la imagen Docker y la publica en el registro (solo en la rama `main`).
+
+---
+
 ## Futuras Mejoras y Siguientes Pasos
 
-Aunque el proyecto cumple con todos los requisitos funcionales, se proponen los siguientes pasos para llevarlo a un siguiente nivel de madurez:
-
-* **CI/CD (Integración y Despliegue Continuo):**
-    * Crear un pipeline en **Azure DevOps** o **GitHub Actions** que se dispare con cada `push` a la rama `feat`.
-    * El pipeline ejecutaría los siguientes pasos:
-        1.  **Build:** Compilar el proyecto Java.
-        2.  **Test:** Ejecutar las pruebas.
-        3.  **Package:** Construir la imagen Docker de la aplicación.
-        4.  **Push:** Publicar la imagen en un registro de contenedores privado como **Azure Container Registry (ACR)**.
-        5.  **Deploy:** Desplegar la nueva versión de la imagen en **Azure Kubernetes Service (AKS)**, actualizando los pods de forma controlada (ej. Rolling Update).
+Aunque Se proponen los siguientes pasos para llevarlo a un siguiente nivel de madurez:
 
 * **Documentación de API con OpenAPI (Swagger):**
     * Integrar la dependencia `springdoc-openapi` para generar automáticamente una especificación OpenAPI 3.
@@ -118,3 +124,15 @@ Aunque el proyecto cumple con todos los requisitos funcionales, se proponen los 
 * **Monitorización y Métricas:**
     * Habilitar los endpoints de **Spring Boot Actuator** para exponer métricas de salud y rendimiento de la aplicación.
     * Configurar un stack de monitorización con **Prometheus** para recolectar las métricas y **Grafana** para visualizarlas en dashboards, permitiendo una observabilidad completa del estado de la aplicación en producción.
+
+* **Subir a producción utilizando infraestructura Cloud:**
+    * Se sugiere subir la aplicación contenerizada a un servicio de Azure
+    * Utilizar una BD de Servicio de la nube ya que la imagen de la BD de Docker se recomienda utilizar solamente para fase de pruebas
+    * Generar 2 grupos de recursos, 1 para QA y 1 para Prod
+    * Utilizar Terraform para mantener una correcta gestión de las infraestructuras de Azure
+
+* **Microservicios:**
+    * Si se generan más servicios se sugiere utilizar una arquitectura de microservicios
+    * Utilizar Kubernetes para gestionarlos
+    * Generar una estrategia de BD en caso de que se genere una BD por servicio (Recomendado)
+    * Modificar Deploy del pipeline: Desplegar la nueva versión de la imagen en **Azure Kubernetes Service (AKS)**, actualizando los pods de forma controlada (ej. Rolling Update).
